@@ -36,7 +36,7 @@ Un bot de trading automatizado que ejecuta operaciones en función de indicadore
 Para instalar los paquetes necesarios:
 ```bash
 pip install -r requirements.txt
-
+```
 ---
 
 
