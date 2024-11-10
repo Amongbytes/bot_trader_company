@@ -3,7 +3,6 @@ import time
 import hmac
 import hashlib
 import json
-import numpy as np
 import pandas as pd
 import logging
 from requests.adapters import HTTPAdapter
@@ -12,21 +11,22 @@ from requests.packages.urllib3.util.retry import Retry
 # Configuración de log
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Configuración del bot
-API_KEY = 'TU_API_KEY'
-API_SECRET = 'TU_API_SECRET'
-BASE_URL = 'https://api.bitflex.com'
+# Cargar configuración desde un archivo externo
+with open('config.json') as config_file:
+    config = json.load(config_file)
 
-# Parámetros de trading
-SYMBOL = 'BTCUSDT'  
-BUY_THRESHOLD_RSI = 30  
-SELL_THRESHOLD_RSI = 70  
-TRADE_AMOUNT = 0.001  
-EMA_PERIOD = 14  
-RSI_PERIOD = 14  
-CHECK_INTERVAL = 60  
+API_KEY = config['API_KEY']
+API_SECRET = config['API_SECRET']
+BASE_URL = config['BASE_URL']
+SYMBOL = config['SYMBOL']
+BUY_THRESHOLD_RSI = config['BUY_THRESHOLD_RSI']
+SELL_THRESHOLD_RSI = config['SELL_THRESHOLD_RSI']
+TRADE_AMOUNT = config['TRADE_AMOUNT']
+EMA_PERIOD = config['EMA_PERIOD']
+RSI_PERIOD = config['RSI_PERIOD']
+CHECK_INTERVAL = config['CHECK_INTERVAL']
 
-# Sesión de requests con reintentos
+# Sesión de requests con reintentos configurados
 session = requests.Session()
 retries = Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
 session.mount('https://', HTTPAdapter(max_retries=retries))
@@ -101,6 +101,14 @@ def get_market_price(symbol):
         logging.error(f"Error al obtener el precio actual: {e}")
         return None
 
+# Función para guardar los registros de las órdenes en un archivo CSV
+def log_order_to_csv(order_data):
+    df = pd.DataFrame([order_data])
+    try:
+        df.to_csv('trading_log.csv', mode='a', header=False, index=False)
+    except Exception as e:
+        logging.error(f"Error al guardar el registro de la orden: {e}")
+
 # Función principal del bot
 def trading_bot():
     while True:
@@ -123,10 +131,14 @@ def trading_bot():
             if current_price < ema and rsi < BUY_THRESHOLD_RSI:
                 logging.info('El precio está bajo y el RSI indica sobreventa. Comprando...')
                 order = place_order(SYMBOL, 'BUY', TRADE_AMOUNT, current_price)
+                if order:
+                    log_order_to_csv(order)
                 logging.info(f'Orden de compra ejecutada: {order}')
             elif current_price > ema and rsi > SELL_THRESHOLD_RSI:
                 logging.info('El precio está alto y el RSI indica sobrecompra. Vendiendo...')
                 order = place_order(SYMBOL, 'SELL', TRADE_AMOUNT, current_price)
+                if order:
+                    log_order_to_csv(order)
                 logging.info(f'Orden de venta ejecutada: {order}')
             else:
                 logging.info('Esperando una mejor oportunidad...')
