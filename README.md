@@ -38,6 +38,8 @@ Para instalar los paquetes necesarios:
 pip install -r requirements.txt
 
 ---
+
+
 ## Instalación
 
 
@@ -46,12 +48,14 @@ Clona el repositorio:
 ```bash
 git clone https://github.com/tuusuario/trading-bot.git
 cd trading-bot
+```
+
 Instala los requisitos:
 
 ```bash
-Copiar código
 pip install -r requirements.txt
 Crea el archivo de configuración JSON siguiendo el formato en Configuración.
+```
 
 ---
 
@@ -75,6 +79,8 @@ json
     "RSI_PERIOD": 14,
     "CHECK_INTERVAL": 60
 }
+```
+
 Parámetros del Archivo de Configuración
 API_KEY y API_SECRET: Claves de autenticación para la API de la plataforma de intercambio.
 BASE_URL: URL base de la API del intercambio.
@@ -95,6 +101,8 @@ Para iniciar el bot, ejecuta el siguiente comando:
 ```bash
 
 python trading_bot.py
+```
+
 El bot empezará a monitorear el mercado en función de los parámetros configurados y ejecutará órdenes de compra/venta cuando se cumplan las condiciones.
 
 ---
@@ -114,7 +122,7 @@ calculate_pdl: Obtiene el Precio de Cierre del Día Anterior (PDL).
 place_order: Ejecuta una orden en el intercambio.
 log_order_to_csv: Guarda un registro de las órdenes en un archivo CSV.
 trading_bot: Función principal que ejecuta el bot en un bucle y evalúa las condiciones de trading.
-
+```
 
 ---
 
@@ -145,7 +153,7 @@ Aquí tienes un ejemplo de la salida del bot en consola:
 2023-01-01 12:00:00 - INFO - El precio está bajo y el RSI indica sobreventa cerca del PDL. Comprando...
 2023-01-01 12:00:01 - INFO - Orden ejecutada: {'symbol': 'BTCUSDT', 'side': 'BUY', 'price': 42000, 'quantity': 0.001}
 2023-01-01 12:10:00 - INFO - Esperando una mejor oportunidad...
-
+```
 
 Cada orden ejecutada se registra en un archivo trading_log.csv con los detalles de la operación, que incluye el símbolo, el precio, la cantidad, y otros datos relevantes.
 
