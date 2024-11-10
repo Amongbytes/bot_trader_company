@@ -8,9 +8,8 @@ import logging
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
-# Configuración de log
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class Config:
@@ -28,10 +27,6 @@ class Config:
         self.EMA_PERIOD = self.config.get('EMA_PERIOD', 14)
         self.RSI_PERIOD = self.config.get('RSI_PERIOD', 14)
         self.CHECK_INTERVAL = self.config.get('CHECK_INTERVAL', 60)
-        
-        # Verificar claves críticas
-        if not self.API_KEY or not self.API_SECRET:
-            raise ValueError("API_KEY y API_SECRET son necesarios en config.json")
 
 config = Config()
 
@@ -73,17 +68,17 @@ class APIClient:
 
 api_client = APIClient(config.BASE_URL, config.API_KEY, config.API_SECRET)
 
-def get_price_history(symbol: str, interval='1m', limit=100) -> list:
+def get_price_history(symbol: str, interval='1m', limit=100) -> List[float]:
     data = api_client.get('/api/v1/market/klines', {'symbol': symbol, 'interval': interval, 'limit': limit})
     return [float(entry[4]) for entry in data['data']] if data else []
 
-def calculate_ema(prices: list, period: int) -> Optional[float]:
+def calculate_ema(prices: List[float], period: int) -> Optional[float]:
     if len(prices) < period:
         logging.warning("Datos insuficientes para calcular la EMA.")
         return None
     return pd.Series(prices).ewm(span=period, adjust=False).mean().iloc[-1]
 
-def calculate_rsi(prices: list, period: int) -> Optional[float]:
+def calculate_rsi(prices: List[float], period: int) -> Optional[float]:
     if len(prices) < period:
         logging.warning("Datos insuficientes para calcular el RSI.")
         return None
@@ -92,6 +87,13 @@ def calculate_rsi(prices: list, period: int) -> Optional[float]:
     loss = -delta.where(delta < 0, 0).rolling(window=period).mean()
     rs = gain / loss
     return 100 - (100 / (1 + rs)).iloc[-1]
+
+def calculate_pdl(symbol: str) -> Optional[float]:
+    data = api_client.get('/api/v1/market/klines', {'symbol': symbol, 'interval': '1d', 'limit': 2})
+    if data and len(data['data']) > 1:
+        return float(data['data'][-2][3])  # Close of the previous day
+    logging.error("No se pudo obtener el PDL.")
+    return None
 
 def place_order(symbol: str, side: str, quantity: float, price: float) -> Optional[dict]:
     params = {
@@ -126,16 +128,18 @@ def trading_bot():
 
             ema = calculate_ema(prices, config.EMA_PERIOD)
             rsi = calculate_rsi(prices, config.RSI_PERIOD)
+            pdl = calculate_pdl(config.SYMBOL)
             current_price = get_market_price(config.SYMBOL)
 
-            if current_price is None or ema is None or rsi is None:
+            if current_price is None or ema is None or rsi is None or pdl is None:
                 time.sleep(config.CHECK_INTERVAL)
                 continue
 
-            logging.info(f'Precio actual: {current_price} USD, EMA: {ema:.2f}, RSI: {rsi:.2f}')
+            logging.info(f'Precio actual: {current_price} USD, EMA: {ema:.2f}, RSI: {rsi:.2f}, PDL: {pdl:.2f}')
             order = None
-            if current_price < ema and rsi < config.BUY_THRESHOLD_RSI:
-                logging.info('El precio está bajo y el RSI indica sobreventa. Comprando...')
+
+            if current_price < ema and rsi < config.BUY_THRESHOLD_RSI and current_price <= pdl * 1.02:
+                logging.info('El precio está bajo y el RSI indica sobreventa cerca del PDL. Comprando...')
                 order = place_order(config.SYMBOL, 'BUY', config.TRADE_AMOUNT, current_price)
             elif current_price > ema and rsi > config.SELL_THRESHOLD_RSI:
                 logging.info('El precio está alto y el RSI indica sobrecompra. Vendiendo...')
