@@ -36,3 +36,50 @@ Un bot de trading automatizado que ejecuta operaciones en función de indicadore
 Para instalar los paquetes necesarios:
 ```bash
 pip install -r requirements.txt
+
+---
+## Instalación
+
+
+Clona el repositorio:
+
+```bash
+git clone https://github.com/tuusuario/trading-bot.git
+cd trading-bot
+Instala los requisitos:
+
+```bash
+Copiar código
+pip install -r requirements.txt
+Crea el archivo de configuración JSON siguiendo el formato en Configuración.
+
+---
+
+## Configuración
+
+Antes de ejecutar el bot, crea un archivo config.json en el directorio raíz del proyecto con el siguiente formato:
+
+
+```bash
+json
+
+{
+    "API_KEY": "tu_api_key",
+    "API_SECRET": "tu_api_secret",
+    "BASE_URL": "https://api.exchangename.com",
+    "SYMBOL": "BTCUSDT",
+    "BUY_THRESHOLD_RSI": 30,
+    "SELL_THRESHOLD_RSI": 70,
+    "TRADE_AMOUNT": 0.001,
+    "EMA_PERIOD": 14,
+    "RSI_PERIOD": 14,
+    "CHECK_INTERVAL": 60
+}
+Parámetros del Archivo de Configuración
+API_KEY y API_SECRET: Claves de autenticación para la API de la plataforma de intercambio.
+BASE_URL: URL base de la API del intercambio.
+SYMBOL: Par de trading (por ejemplo, BTCUSDT).
+BUY_THRESHOLD_RSI y SELL_THRESHOLD_RSI: Umbrales para decidir cuándo comprar o vender en función del RSI.
+TRADE_AMOUNT: Cantidad a operar en cada transacción.
+EMA_PERIOD y RSI_PERIOD: Períodos para el cálculo de EMA y RSI, respectivamente.
+CHECK_INTERVAL: Intervalo de tiempo (en segundos) para ejecutar el bucle de operaciones del bot.
