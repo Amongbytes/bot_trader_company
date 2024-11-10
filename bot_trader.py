@@ -156,5 +156,10 @@ def trading_bot():
             logging.error(f'Error inesperado: {e}')
             time.sleep(config.CHECK_INTERVAL)
 
+
+
+
 if __name__ == '__main__':
     trading_bot()
+
+
