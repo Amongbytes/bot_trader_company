@@ -15,7 +15,35 @@ from email.mime.text import MIMEText
 # Logging setup
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
 class Config:
+    """Clase de configuración que define los parámetros de operación del bot directamente en el código."""
+    def __init__(self):
+        # Clave API para autenticación con el servicio
+        self.API_KEY = 'TU_API_KEY_AQUI'  # Reemplaza con tu clave de API
+        # Clave secreta para la autenticación de API
+        self.API_SECRET = 'TU_API_SECRET_AQUI'  # Reemplaza con tu clave secreta de API
+        # URL base de la API del servicio
+        self.BASE_URL = 'https://api.exchange.com'  # Cambia según el exchange que uses
+        # Símbolo de la criptomoneda a operar, por ejemplo, 'BTCUSDT' para Bitcoin
+        self.SYMBOL = 'BTCUSDT'  
+        # Umbral del RSI para comprar (cuando se detecta sobreventa)
+        self.BUY_THRESHOLD_RSI = 30  
+        # Umbral del RSI para vender (cuando se detecta sobrecompra)
+        self.SELL_THRESHOLD_RSI = 70  
+        # Cantidad de criptomoneda para cada transacción
+        self.TRADE_AMOUNT = 0.001  
+        # Periodo para el cálculo de la media exponencial (EMA)
+        self.EMA_PERIOD = 14  
+        # Periodo para el cálculo del Índice de Fuerza Relativa (RSI)
+        self.RSI_PERIOD = 14  
+        # Intervalo en segundos para verificar el mercado y ejecutar operaciones
+        self.CHECK_INTERVAL = 60  
+        # Porcentaje máximo de riesgo para la operación actual
+        self.MAX_RISK_PERCENT = 2  # Gestión del riesgo
+
+        # Configuración opcional para notificaciones por correo electrónico
+        self.NOTIFY_EMAIL = None  # Dirección de correo electrónico para notificaciones
     """Configuration class for loading bot settings from a JSON file."""
     def __init__(self, config_path='config.json'):
         with open(config_path) as config_file:
